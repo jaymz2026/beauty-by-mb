@@ -1,13 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-const { supabase } = require('./lib/supabase');
+import express from 'express';
+import cors from 'cors';
+import { supabase } from './lib/supabase.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+const router = express.Router();
+
+// Health check / Test route
+router.get('/test', (req, res) => {
+  res.json({
+    message: 'API is working',
+    env: {
+      url: !!process.env.SUPABASE_URL,
+      key: !!process.env.SUPABASE_ANON_KEY
+    }
+  });
+});
+
 // Product Routes
-app.get('/api/products', async (req, res) => {
+router.get('/products', async (req, res) => {
   const { category } = req.query;
 
   let query = supabase
@@ -19,8 +32,6 @@ app.get('/api/products', async (req, res) => {
     .order('id', { ascending: false });
 
   if (category) {
-    // Note: This assumes category name filtering
-    // In a real scenario, you might want to join and filter by category name
     const { data: catData } = await supabase
       .from('categories')
       .select('id')
@@ -38,7 +49,7 @@ app.get('/api/products', async (req, res) => {
   res.json(data);
 });
 
-app.get('/api/products/:id', async (req, res) => {
+router.get('/products/:id', async (req, res) => {
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -53,7 +64,7 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // Journal Routes
-app.get('/api/journal', async (req, res) => {
+router.get('/journal', async (req, res) => {
   const { data, error } = await supabase
     .from('journal_posts')
     .select('*')
@@ -63,7 +74,7 @@ app.get('/api/journal', async (req, res) => {
   res.json(data);
 });
 
-app.get('/api/journal/:id', async (req, res) => {
+router.get('/journal/:id', async (req, res) => {
   const { data, error } = await supabase
     .from('journal_posts')
     .select('*')
@@ -74,13 +85,6 @@ app.get('/api/journal/:id', async (req, res) => {
   res.json(data);
 });
 
-// Export for Vercel
-module.exports = app;
+app.use('/api', router);
 
-// Start server if run directly (for local testing)
-if (require.main === module) {
-  const PORT = process.env.PORT || 8080;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+export default app;

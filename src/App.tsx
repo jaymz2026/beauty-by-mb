@@ -1,5 +1,3 @@
-import React from 'react';
-
 function App() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden">

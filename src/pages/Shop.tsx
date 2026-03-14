@@ -1,54 +1,39 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { api } from '../api';
 
-const products = [
-  {
-    id: 1,
-    name: "The Hydration Series",
-    category: "Sets",
-    price: 185,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAhYPd6R7qM8-FOCG9B3lsd2MSrrkwUJ3fGyTkUoeZRbfkIy0aWkuuGMoHlYSWN4bY3uC00O3asZ9ya0mK1WywbaqFHnl58CR31Zjpxbx_W3AkyFnnCcNDSrmPgYnX5QEjxYjg1j-zsp0a4x_tLq6YPXVnr6S8FOq6RfICoKis0Sc7HilFnLPlyCqvZYmWDaoWu34ugoFystkchBVIUYmZL8lShZ80t12Bfrs2bDSAwjU2pKXxUrdkw-QlvcdPOzr4-pwH1FjZhG23O",
-    description: "Intense moisture for dewy skin"
-  },
-  {
-    id: 2,
-    name: "Eternal Youth Serum",
-    category: "Serums",
-    price: 120,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1zbibOQb8Ri3z5F-LWfxrHNf4zVg5BzxiqHmnLBdhXumRUytfLyHo1mNlqKbUTYfwE-3DhF1KCDHX0dZOpYNjGrW_DuU6p56eq6c-rGj1GQ1vTHyl0MVgKugwJiXlwdiyv4WTiYPagJRXo-ZKkfSUhx-FP9r_WsfmHbmYizfdZnv0F-jgUUMpH22KatPsxcOGkEkXzZR91qTJ_asFFu3ZMZ9rbzfC4pRdGoRe-rmJCWi4PuUgQotyOrDhkn2p8XkG0EdJl-9cXY2A",
-    description: "Advanced anti-aging formula"
-  },
-  {
-    id: 3,
-    name: "Radiance Rituals",
-    category: "Collections",
-    price: 240,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCAbHu4IuCLLGzQ6euJdKDjhMsWVlxSMf2_A8e6hdxSjRMnmSAayikwE8vOmEwYurMPdI0ovigL06uFLUGXvZW0NTuQlmxFMjXHnA2lan00LM-k59geVw0mRvFixPI_3ir7m3UZ47fOrz8h-FMOn_nd3UHovvyTsQxrSqF0vmBATsGDT3sD73xkkjljqggrCZDAE0WsCqXJSt4cO6Z9pMnBfGJBOV47_V084o5q1vepmeF308fH0H8tmwn0FYPAcdiGtAf4LQAldzxn",
-    description: "Complete glow-enhancing routine"
-  },
-  {
-    id: 4,
-    name: "Pure Balance",
-    category: "Cleansers",
-    price: 65,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBc5aBxPbBTICeI4BG1MyurPngXr0X-iLNwz9obDyWUiIe3wkst9jRvUo-G1MWDeAWHpWyY67bSpd1rkc1vI9luU8tBiyhJ0K-BZ3hVZA6AztCCxFSQ2Lp2Lm6KUzd4GTCCP7UKNOgwlLvCZlnLvO52yF7Y8FHkMQETTHGwBEdYRNW8IivgTH_a2LZS0lD9MLDil8MXVpFeu4AYCJPY_4oGsYNSlePK40GvfjrueAdAEDohRKKlQELUilSJFTyK9M5mFcXGwkq8dnUL",
-    description: "Gentle purification for all skin types"
-  },
-  {
-    id: 5,
-    name: "Midnight Oil",
-    category: "Face Oils",
-    price: 95,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB4Fk8_2OCF9cQW_sYORAJMc4RWu9AaTOoNE-MVT5CuJ254d5oTUhI066oWYI4VlwOuYtDXC45-LqYpXq14SIX8ixgqsaraVwAVdNd_xUfjtQbBXQlNwB4fKFmx3-ebqUNVluuh1Cu8oAXirFzFYc-cRR_x1VxjF2cMs6kQhE6_imD5mRueNOiG5Bne8uijnQ5CVpozKyQwmOaRF5PnE_jdB13raxOF_5ESkdKHb0eHi0jFsJmR9LI4UED8A_1BshgrUnIukVtteRz-",
-    description: "Repairing overnight treatment"
-  }
-];
+interface Product {
+  id: number;
+  name: string;
+  category: { name: string } | string;
+  price: number;
+  image: string;
+  description: string;
+}
 
 export function Shop() {
   const { category } = useParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProducts = category
-    ? products.filter(p => p.category.toLowerCase() === category.toLowerCase())
-    : products;
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await api.getProducts(category);
+        setProducts(data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load products. Please ensure the backend is running.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [category]);
 
   return (
     <main className="flex-grow pt-8 pb-24">
@@ -75,23 +60,21 @@ export function Shop() {
                 <li><Link to="/shop/sets" className={`text-sm hover:text-primary transition-colors ${category === 'sets' ? 'font-bold text-primary' : 'text-slate-600'}`}>Gift Sets</Link></li>
               </ul>
             </div>
-
-            <div>
-              <h3 className="font-bold mb-4 uppercase text-xs tracking-widest text-primary">Sort By</h3>
-              <select className="w-full bg-white dark:bg-slate-800 border border-primary/10 rounded-lg px-4 py-2 text-sm focus:ring-primary outline-none">
-                <option>Featured</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest Arrivals</option>
-              </select>
-            </div>
           </aside>
 
           {/* Product Grid */}
           <div className="flex-grow">
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-24">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-24 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-dashed border-red-200 text-red-600">
+                <p>{error}</p>
+              </div>
+            ) : products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <Link key={product.id} to={`/product/${product.id}`} className="group">
                     <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200 relative">
                       <img
@@ -99,9 +82,6 @@ export function Shop() {
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <button className="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-slate-900/90 py-3 rounded-lg font-bold text-sm opacity-0 transform translate-y-4 transition-all group-hover:opacity-100 group-hover:translate-y-0 backdrop-blur-sm">
-                        Quick Add
-                      </button>
                     </div>
                     <div className="mt-4 flex justify-between items-start">
                       <div>

@@ -1,126 +1,119 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { api } from '../api';
 
-const products = [
-  {
-    id: 1,
-    name: "The Hydration Series",
-    category: "Sets",
-    price: 185,
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAhYPd6R7qM8-FOCG9B3lsd2MSrrkwUJ3fGyTkUoeZRbfkIy0aWkuuGMoHlYSWN4bY3uC00O3asZ9ya0mK1WywbaqFHnl58CR31Zjpxbx_W3AkyFnnCcNDSrmPgYnX5QEjxYjg1j-zsp0a4x_tLq6YPXVnr6S8FOq6RfICoKis0Sc7HilFnLPlyCqvZYmWDaoWu34ugoFystkchBVIUYmZL8lShZ80t12Bfrs2bDSAwjU2pKXxUrdkw-QlvcdPOzr4-pwH1FjZhG23O",
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCAbHu4IuCLLGzQ6euJdKDjhMsWVlxSMf2_A8e6hdxSjRMnmSAayikwE8vOmEwYurMPdI0ovigL06uFLUGXvZW0NTuQlmxFMjXHnA2lan00LM-k59geVw0mRvFixPI_3ir7m3UZ47fOrz8h-FMOn_nd3UHovvyTsQxrSqF0vmBATsGDT3sD73xkkjljqggrCZDAE0WsCqXJSt4cO6Z9pMnBfGJBOV47_V084o5q1vepmeF308fH0H8tmwn0FYPAcdiGtAf4LQAldzxn"
-    ],
-    description: "Our signature hydration collection designed to drench your skin in moisture and lock it in for 24-hour radiance. This set includes our Gentle Foam Cleanser, Hyaluronic Serum, and Barrier Repair Cream.",
-    benefits: [
-      "Deeply hydrates and plumps",
-      "Strengthens the skin's natural moisture barrier",
-      "Leaves skin with a dewy, healthy glow",
-      "Suitable for all skin types, including sensitive"
-    ],
-    ingredients: "Hyaluronic Acid, Ceramides, Rosehip Oil, Aloe Vera, Vitamin B5."
-  },
-  {
-    id: 2,
-    name: "Eternal Youth Serum",
-    category: "Serums",
-    price: 120,
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA1zbibOQb8Ri3z5F-LWfxrHNf4zVg5BzxiqHmnLBdhXumRUytfLyHo1mNlqKbUTYfwE-3DhF1KCDHX0dZOpYNjGrW_DuU6p56eq6c-rGj1GQ1vTHyl0MVgKugwJiXlwdiyv4WTiYPagJRXo-ZKkfSUhx-FP9r_WsfmHbmYizfdZnv0F-jgUUMpH22KatPsxcOGkEkXzZR91qTJ_asFFu3ZMZ9rbzfC4pRdGoRe-rmJCWi4PuUgQotyOrDhkn2p8XkG0EdJl-9cXY2A"
-    ],
-    description: "An advanced age-defying serum powered by plant-based stem cells and clinical peptides to visibly reduce fine lines and firm the skin.",
-    benefits: [
-      "Smooths fine lines and wrinkles",
-      "Improves skin elasticity",
-      "Evens skin tone and texture",
-      "Provides antioxidant protection"
-    ],
-    ingredients: "Swiss Apple Stem Cells, Matrixyl 3000, Vitamin C, Ferulic Acid."
-  }
-];
+interface Product {
+  id: number;
+  name: string;
+  category: { name: string } | string;
+  price: number;
+  image: string;
+  description: string;
+}
 
 export function ProductDetail() {
   const { id } = useParams();
-  const product = products.find(p => p.id === Number(id)) || products[0];
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const data = await api.getProduct(id);
+        setProduct(data);
+        setError(null);
+      } catch (err) {
+        setError('Product not found.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  if (loading) return (
+    <div className="flex justify-center py-48">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+
+  if (error || !product) return (
+    <div className="text-center py-48">
+      <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
+      <Link to="/shop" className="text-primary font-bold">Back to Shop</Link>
+    </div>
+  );
 
   return (
-    <main className="flex-grow pt-8 pb-24">
+    <main className="flex-grow pt-12 pb-24">
       <div className="mx-auto max-w-7xl px-6">
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-12">
-          <Link to="/" className="hover:text-primary">Home</Link>
-          <span className="material-symbols-outlined text-xs">chevron_right</span>
-          <Link to="/shop" className="hover:text-primary">Shop</Link>
-          <span className="material-symbols-outlined text-xs">chevron_right</span>
-          <span className="text-slate-900 dark:text-slate-100">{product.name}</span>
-        </nav>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Image Gallery */}
-          <div className="space-y-6">
-            <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
-              <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-            </div>
-            {product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-4">
-                {product.images.map((img, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-100 cursor-pointer border-2 border-transparent hover:border-primary transition-all">
-                    <img src={img} alt={`${product.name} ${idx}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
           </div>
-
-          {/* Product Info */}
-          <div className="space-y-8">
-            <div>
-              <span className="text-primary font-bold uppercase tracking-widest text-xs">{product.category}</span>
-              <h1 className="text-4xl font-[800] tracking-tight mt-2">{product.name}</h1>
-              <p className="text-2xl font-bold text-primary mt-4">${product.price.toFixed(2)}</p>
-            </div>
-
-            <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-              {product.description}
+          <div className="flex flex-col justify-center">
+            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">
+              <Link to="/shop" className="hover:text-primary transition-colors">Shop</Link>
+              <span className="material-symbols-outlined text-sm">chevron_right</span>
+              <span className="text-primary">{typeof product.category === 'object' ? product.category.name : product.category}</span>
+            </nav>
+            <h1 className="text-4xl md:text-5xl font-[800] tracking-tight mb-4">{product.name}</h1>
+            <p className="text-2xl font-bold text-primary mb-8">${product.price.toFixed(2)}</p>
+            <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-10">
+              {product.description}. Formulated with our signature botanical complex and clinically-proven active ingredients to deliver visible results while maintaining skin health.
             </p>
 
-            <div className="space-y-4">
-              <h3 className="font-bold">Key Benefits</h3>
-              <ul className="space-y-2">
-                {product.benefits.map((benefit, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                    <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <button className="flex-grow bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-bold transition-all transform hover:-translate-y-1">
-                Add To Bag
+                Add to Bag
               </button>
-              <button className="flex items-center justify-center p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors">
-                <span className="material-symbols-outlined">favorite</span>
+              <button className="flex items-center justify-center border border-primary/20 hover:border-primary px-4 rounded-lg transition-colors">
+                <span className="material-symbols-outlined text-primary">favorite</span>
               </button>
             </div>
 
-            <div className="border-t border-primary/10 pt-8 mt-8 space-y-6">
+            <div className="space-y-6 border-t border-primary/10 pt-8">
               <details className="group" open>
                 <summary className="flex items-center justify-between font-bold cursor-pointer list-none">
-                  Ingredients
+                  <span>Benefits</span>
                   <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
                 </summary>
-                <p className="mt-4 text-sm text-slate-500 leading-relaxed">
-                  {product.ingredients}
-                </p>
+                <div className="pt-4 text-slate-500 text-sm leading-relaxed">
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>Deeply hydrates and locks in moisture for 24 hours</li>
+                    <li>Improves skin elasticity and firmness</li>
+                    <li>Calms redness and reduces inflammation</li>
+                    <li>Suitable for all skin types, including sensitive skin</li>
+                  </ul>
+                </div>
               </details>
               <details className="group">
                 <summary className="flex items-center justify-between font-bold cursor-pointer list-none">
-                  How To Use
+                  <span>How to Use</span>
                   <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
                 </summary>
-                <p className="mt-4 text-sm text-slate-500 leading-relaxed">
-                  Apply 2-3 drops to clean, dry skin. Massage gently in upward circular motions until fully absorbed. Use morning and night for best results.
-                </p>
+                <div className="pt-4 text-slate-500 text-sm leading-relaxed">
+                  Apply 2-3 drops to clean, damp skin morning and night. Gently press into face and neck until fully absorbed. Follow with your favorite moisturizer.
+                </div>
+              </details>
+              <details className="group">
+                <summary className="flex items-center justify-between font-bold cursor-pointer list-none">
+                  <span>Key Ingredients</span>
+                  <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+                </summary>
+                <div className="pt-4 text-slate-500 text-sm leading-relaxed">
+                  Hyaluronic Acid, Vitamin B5, Squalane, and our proprietary Radiant Botanical Blend.
+                </div>
               </details>
             </div>
           </div>

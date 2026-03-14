@@ -58,7 +58,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     });
-    if (!response.ok) throw new Error('Failed to create product');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create product');
+    }
     return response.json();
   },
 
@@ -89,7 +92,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     });
-    if (!response.ok) throw new Error('Failed to create category');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create category');
+    }
     return response.json();
   },
 

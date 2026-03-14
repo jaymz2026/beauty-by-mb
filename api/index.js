@@ -1,6 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { supabase } from './lib/supabase.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 app.use(cors());
@@ -54,13 +60,17 @@ router.get('/products', async (req, res) => {
 });
 
 router.post('/products', async (req, res) => {
+  console.log('Attempting to add product:', req.body);
   const { data, error } = await supabase
     .from('products')
     .insert([req.body])
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    console.error('Supabase Insert Error:', error);
+    return res.status(500).json({ error: error.message });
+  }
   res.status(201).json(data);
 });
 
@@ -154,6 +164,6 @@ router.delete('/categories/:id', async (req, res) => {
   res.status(204).send();
 });
 
-app.use('/api', router);
+app.use('/', router);
 
 export default app;

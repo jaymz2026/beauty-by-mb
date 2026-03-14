@@ -58,8 +58,9 @@ export function Admin() {
         purchase_url: ''
       });
       fetchData();
-    } catch (error) {
-      alert('Failed to add product');
+    } catch (error: any) {
+      console.error('Add product error:', error);
+      alert(`Failed to add product: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -80,8 +81,9 @@ export function Admin() {
       await api.createCategory(newCategoryName);
       setNewCategoryName('');
       fetchData();
-    } catch (error) {
-      alert('Failed to add category');
+    } catch (error: any) {
+      console.error('Add category error:', error);
+      alert(`Failed to add category: ${error.message || 'Unknown error'}`);
     }
   }
 

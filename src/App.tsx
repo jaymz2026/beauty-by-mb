@@ -5,6 +5,7 @@ import { Home } from './pages/Home';
 import { Shop } from './pages/Shop';
 import { ProductDetail } from './pages/ProductDetail';
 import { Journal } from './pages/Journal';
+import { Admin } from './pages/Admin';
 
 // Placeholder for Collections
 const Collections = () => <div className="p-24 text-center">Collections Page (Coming Soon)</div>;
@@ -21,6 +22,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/collections" element={<Collections />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
         <Footer />
       </div>

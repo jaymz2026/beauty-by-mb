@@ -21,7 +21,7 @@ router.get('/test', (req, res) => {
 
 // Product Routes
 router.get('/products', async (req, res) => {
-  const { category } = req.query;
+  const { category, q } = req.query;
 
   let query = supabase
     .from('products')
@@ -30,6 +30,10 @@ router.get('/products', async (req, res) => {
       category:categories(name)
     `)
     .order('id', { ascending: false });
+
+  if (q) {
+    query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
 
   if (category) {
     const { data: catData } = await supabase
@@ -47,6 +51,39 @@ router.get('/products', async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+router.post('/products', async (req, res) => {
+  const { data, error } = await supabase
+    .from('products')
+    .insert([req.body])
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+router.put('/products/:id', async (req, res) => {
+  const { data, error } = await supabase
+    .from('products')
+    .update(req.body)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.delete('/products/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).send();
 });
 
 router.get('/products/:id', async (req, res) => {
@@ -83,6 +120,38 @@ router.get('/journal/:id', async (req, res) => {
 
   if (error) return res.status(404).json({ error: 'Post not found' });
   res.json(data);
+});
+
+// Category Routes
+router.get('/categories', async (req, res) => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name');
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+router.post('/categories', async (req, res) => {
+  const { data, error } = await supabase
+    .from('categories')
+    .insert([req.body])
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+router.delete('/categories/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', req.params.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).send();
 });
 
 app.use('/api', router);

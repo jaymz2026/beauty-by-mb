@@ -21,10 +21,12 @@ export interface JournalPost {
 }
 
 export const api = {
-  getProducts: async (category?: string): Promise<Product[]> => {
-    const url = category
-      ? `${API_BASE_URL}/products?category=${encodeURIComponent(category)}`
-      : `${API_BASE_URL}/products`;
+  getProducts: async (category?: string, query?: string): Promise<Product[]> => {
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    if (query) params.append('q', query);
+
+    const url = `${API_BASE_URL}/products?${params.toString()}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch products');
     return response.json();
@@ -46,5 +48,52 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/journal/${id}`);
     if (!response.ok) throw new Error('Failed to fetch journal post');
     return response.json();
+  },
+
+  // Admin / CRUD Methods
+  createProduct: async (product: any) => {
+    const response = await fetch(`${API_BASE_URL}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    });
+    if (!response.ok) throw new Error('Failed to create product');
+    return response.json();
+  },
+
+  updateProduct: async (id: number, product: Partial<Product>) => {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    });
+    if (!response.ok) throw new Error('Failed to update product');
+    return response.json();
+  },
+
+  deleteProduct: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete product');
+  },
+
+  getCategories: async () => {
+    const response = await fetch(`${API_BASE_URL}/categories`);
+    if (!response.ok) throw new Error('Failed to fetch categories');
+    return response.json();
+  },
+
+  createCategory: async (name: string) => {
+    const response = await fetch(`${API_BASE_URL}/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok) throw new Error('Failed to create category');
+    return response.json();
+  },
+
+  deleteCategory: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/categories/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete category');
   }
 };

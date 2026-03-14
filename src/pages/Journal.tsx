@@ -1,18 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../api';
-
-interface Article {
-  id: number;
-  title: string;
-  excerpt: string;
-  category: string;
-  date: string;
-  image: string;
-}
+import { api, type JournalPost } from '../api';
 
 export function Journal() {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<JournalPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

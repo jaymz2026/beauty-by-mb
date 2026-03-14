@@ -1,6 +1,25 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { api, type Product } from '../api';
 
 export function Home() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchFeatured() {
+      try {
+        const data = await api.getProducts();
+        setFeaturedProducts(data.slice(0, 4));
+      } catch (error) {
+        console.error("Failed to fetch featured products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFeatured();
+  }, []);
+
   return (
     <main className="flex-grow">
       <section className="relative h-[85vh] w-full overflow-hidden">
@@ -41,38 +60,30 @@ export function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <Link to="/product/1" className="group cursor-pointer">
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200">
-              <img alt="The Hydration Series products" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhYPd6R7qM8-FOCG9B3lsd2MSrrkwUJ3fGyTkUoeZRbfkIy0aWkuuGMoHlYSWN4bY3uC00O3asZ9ya0mK1WywbaqFHnl58CR31Zjpxbx_W3AkyFnnCcNDSrmPgYnX5QEjxYjg1j-zsp0a4x_tLq6YPXVnr6S8FOq6RfICoKis0Sc7HilFnLPlyCqvZYmWDaoWu34ugoFystkchBVIUYmZL8lShZ80t12Bfrs2bDSAwjU2pKXxUrdkw-QlvcdPOzr4-pwH1FjZhG23O"/>
-            </div>
-            <h3 className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">The Hydration Series</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Intense moisture for dewy skin</p>
-            <p className="mt-2 font-bold text-primary">$185.00</p>
-          </Link>
-          <Link to="/product/2" className="group cursor-pointer">
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200">
-              <img alt="Eternal Youth Serum bottle" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1zbibOQb8Ri3z5F-LWfxrHNf4zVg5BzxiqHmnLBdhXumRUytfLyHo1mNlqKbUTYfwE-3DhF1KCDHX0dZOpYNjGrW_DuU6p56eq6c-rGj1GQ1vTHyl0MVgKugwJiXlwdiyv4WTiYPagJRXo-ZKkfSUhx-FP9r_WsfmHbmYizfdZnv0F-jgUUMpH22KatPsxcOGkEkXzZR91qTJ_asFFu3ZMZ9rbzfC4pRdGoRe-rmJCWi4PuUgQotyOrDhkn2p8XkG0EdJl-9cXY2A"/>
-            </div>
-            <h3 className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">Eternal Youth Serum</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Advanced anti-aging formula</p>
-            <p className="mt-2 font-bold text-primary">$120.00</p>
-          </Link>
-          <Link to="/product/3" className="group cursor-pointer">
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200">
-              <img alt="Radiance Rituals set" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAbHu4IuCLLGzQ6euJdKDjhMsWVlxSMf2_A8e6hdxSjRMnmSAayikwE8vOmEwYurMPdI0ovigL06uFLUGXvZW0NTuQlmxFMjXHnA2lan00LM-k59geVw0mRvFixPI_3ir7m3UZ47fOrz8h-FMOn_nd3UHovvyTsQxrSqF0vmBATsGDT3sD73xkkjljqggrCZDAE0WsCqXJSt4cO6Z9pMnBfGJBOV47_V084o5q1vepmeF308fH0H8tmwn0FYPAcdiGtAf4LQAldzxn"/>
-            </div>
-            <h3 className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">Radiance Rituals</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Complete glow-enhancing routine</p>
-            <p className="mt-2 font-bold text-primary">$240.00</p>
-          </Link>
-          <Link to="/product/4" className="group cursor-pointer">
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200">
-              <img alt="Pure Balance Cleansers line" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc5aBxPbBTICeI4BG1MyurPngXr0X-iLNwz9obDyWUiIe3wkst9jRvUo-G1MWDeAWHpWyY67bSpd1rkc1vI9luU8tBiyhJ0K-BZ3hVZA6AztCCxFSQ2Lp2Lm6KUzd4GTCCP7UKNOgwlLvCZlnLvO52yF7Y8FHkMQETTHGwBEdYRNW8IivgTH_a2LZS0lD9MLDil8MXVpFeu4AYCJPY_4oGsYNSlePK40GvfjrueAdAEDohRKKlQELUilSJFTyK9M5mFcXGwkq8dnUL"/>
-            </div>
-            <h3 className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">Pure Balance</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Gentle purification for all skin types</p>
-            <p className="mt-2 font-bold text-primary">$65.00</p>
-          </Link>
+          {loading ? (
+            Array(4).fill(0).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[3/4] bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mt-4"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mt-2"></div>
+              </div>
+            ))
+          ) : (
+            featuredProducts.map((product) => (
+              <Link key={product.id} to={`/product/${product.id}`} className="group cursor-pointer">
+                <div className="aspect-[3/4] overflow-hidden rounded-xl bg-slate-200">
+                  <img
+                    alt={product.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    src={product.image}
+                  />
+                </div>
+                <h3 className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">{product.name}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{product.description}</p>
+                <p className="mt-2 font-bold text-primary">${product.price.toFixed(2)}</p>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 

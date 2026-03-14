@@ -15,7 +15,8 @@ app.get('/api/products', async (req, res) => {
     .select(`
       *,
       category:categories(name)
-    `);
+    `)
+    .order('id', { ascending: false });
 
   if (category) {
     // Note: This assumes category name filtering
@@ -55,7 +56,8 @@ app.get('/api/products/:id', async (req, res) => {
 app.get('/api/journal', async (req, res) => {
   const { data, error } = await supabase
     .from('journal_posts')
-    .select('*');
+    .select('*')
+    .order('id', { ascending: false });
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);

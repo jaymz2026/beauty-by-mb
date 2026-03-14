@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { api } from '../api';
-
-interface Product {
-  id: number;
-  name: string;
-  category: { name: string } | string;
-  price: number;
-  image: string;
-  description: string;
-}
+import { api, type Product } from '../api';
 
 export function ProductDetail() {
   const { id } = useParams();

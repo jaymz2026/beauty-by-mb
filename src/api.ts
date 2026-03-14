@@ -1,9 +1,10 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+// Use relative path for API calls to work seamlessly on Vercel
+const API_BASE_URL = '/api';
 
 export const api = {
   getProducts: async (category?: string) => {
     const url = category
-      ? `${API_BASE_URL}/products?category=${category}`
+      ? `${API_BASE_URL}/products?category=${encodeURIComponent(category)}`
       : `${API_BASE_URL}/products`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch products');

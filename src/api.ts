@@ -8,6 +8,7 @@ export interface Product {
   price: number;
   image: string;
   description: string;
+  purchase_url?: string;
 }
 
 export interface JournalPost {

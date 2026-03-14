@@ -17,7 +17,8 @@ export function Admin() {
     price: 0,
     description: '',
     image: '',
-    category_id: 0
+    category_id: 0,
+    purchase_url: ''
   });
   const [newCategoryName, setNewCategoryName] = useState('');
 
@@ -48,7 +49,14 @@ export function Admin() {
     e.preventDefault();
     try {
       await api.createProduct(newProduct);
-      setNewProduct({ name: '', price: 0, description: '', image: '', category_id: categories[0]?.id || 0 });
+      setNewProduct({
+        name: '',
+        price: 0,
+        description: '',
+        image: '',
+        category_id: categories[0]?.id || 0,
+        purchase_url: ''
+      });
       fetchData();
     } catch (error) {
       alert('Failed to add product');
@@ -183,6 +191,16 @@ export function Admin() {
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-primary/10 rounded-lg px-3 py-2 text-sm outline-none"
                     placeholder="https://..."
                     required
+                  />
+                </div>
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-xs font-bold uppercase text-slate-400">Purchase URL (External Site)</label>
+                  <input
+                    type="text"
+                    value={newProduct.purchase_url}
+                    onChange={(e) => setNewProduct(p => ({ ...p, purchase_url: e.target.value }))}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-primary/10 rounded-lg px-3 py-2 text-sm outline-none"
+                    placeholder="https://..."
                   />
                 </div>
                 <div className="space-y-1">

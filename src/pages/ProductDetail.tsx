@@ -65,9 +65,14 @@ export function ProductDetail() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <button className="flex-grow bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-bold transition-all transform hover:-translate-y-1">
-                Add to Bag
-              </button>
+              <a
+                href={product.purchase_url || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-grow bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-bold transition-all transform hover:-translate-y-1 text-center"
+              >
+                Purchase
+              </a>
               <button className="flex items-center justify-center border border-primary/20 hover:border-primary px-4 rounded-lg transition-colors">
                 <span className="material-symbols-outlined text-primary">favorite</span>
               </button>

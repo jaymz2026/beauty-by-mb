@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from the root directory (up two levels from api/lib)
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  // We log this to Vercel console
-  console.error('MISSING ENV VARS:', {
-    url: !!supabaseUrl,
-    key: !!supabaseKey
-  });
+  console.warn('MISSING SUPABASE ENV VARS in api/lib/supabase.js');
 }
 
 export const supabase = createClient(

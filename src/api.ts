@@ -21,6 +21,13 @@ export interface JournalPost {
   content?: string;
 }
 
+import { supabase } from './lib/supabase';
+
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+};
+
 export const api = {
   getProducts: async (category?: string, query?: string): Promise<Product[]> => {
     const params = new URLSearchParams();
@@ -53,9 +60,13 @@ export const api = {
 
   // Admin / CRUD Methods
   createProduct: async (product: any) => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(product),
     });
     if (!response.ok) {
@@ -66,9 +77,13 @@ export const api = {
   },
 
   updateProduct: async (id: number, product: Partial<Product>) => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(product),
     });
     if (!response.ok) throw new Error('Failed to update product');
@@ -76,7 +91,11 @@ export const api = {
   },
 
   deleteProduct: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, { method: 'DELETE' });
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers
+    });
     if (!response.ok) throw new Error('Failed to delete product');
   },
 
@@ -87,9 +106,13 @@ export const api = {
   },
 
   createCategory: async (name: string) => {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ name }),
     });
     if (!response.ok) {
@@ -100,7 +123,11 @@ export const api = {
   },
 
   deleteCategory: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, { method: 'DELETE' });
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+      method: 'DELETE',
+      headers
+    });
     if (!response.ok) throw new Error('Failed to delete category');
   }
 };

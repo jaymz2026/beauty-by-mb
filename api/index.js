@@ -14,6 +14,44 @@ app.use(express.json());
 
 const router = express.Router();
 
+// Middleware to verify Admin + MFA
+const adminAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+
+  // Check Admin status in profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_admin) return res.status(403).json({ error: 'Forbidden: Admin access required' });
+
+  // Check MFA level (AAL2)
+  const { data: authData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  // Note: getAuthenticatorAssuranceLevel might rely on the current session if called within the same client
+  // However, in a serverless function, we need to verify the JWT claims manually or use Supabase's built-in check
+
+  // Verify AAL via JWT claims
+  // Supabase JWTs contain 'aal' claim
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
+
+  if (payload.aal !== 'aal2') {
+    return res.status(403).json({ error: 'MFA required' });
+  }
+
+  req.user = user;
+  next();
+};
+
 // Health check / Test route
 router.get('/test', (req, res) => {
   res.json({
@@ -59,7 +97,7 @@ router.get('/products', async (req, res) => {
   res.json(data);
 });
 
-router.post('/products', async (req, res) => {
+router.post('/products', adminAuth, async (req, res) => {
   console.log('Attempting to add product:', req.body);
   const { data, error } = await supabase
     .from('products')
@@ -74,7 +112,7 @@ router.post('/products', async (req, res) => {
   res.status(201).json(data);
 });
 
-router.put('/products/:id', async (req, res) => {
+router.put('/products/:id', adminAuth, async (req, res) => {
   const { data, error } = await supabase
     .from('products')
     .update(req.body)
@@ -86,7 +124,7 @@ router.put('/products/:id', async (req, res) => {
   res.json(data);
 });
 
-router.delete('/products/:id', async (req, res) => {
+router.delete('/products/:id', adminAuth, async (req, res) => {
   const { error } = await supabase
     .from('products')
     .delete()
@@ -143,7 +181,7 @@ router.get('/categories', async (req, res) => {
   res.json(data);
 });
 
-router.post('/categories', async (req, res) => {
+router.post('/categories', adminAuth, async (req, res) => {
   const { data, error } = await supabase
     .from('categories')
     .insert([req.body])
@@ -154,7 +192,7 @@ router.post('/categories', async (req, res) => {
   res.status(201).json(data);
 });
 
-router.delete('/categories/:id', async (req, res) => {
+router.delete('/categories/:id', adminAuth, async (req, res) => {
   const { error } = await supabase
     .from('categories')
     .delete()

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { api, type Product } from '../api';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
+  const { session, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -85,9 +87,26 @@ export function Header() {
             )}
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center justify-center p-2 hover:bg-primary/10 rounded-full transition-colors">
-              <span className="material-symbols-outlined">person</span>
-            </button>
+            {session ? (
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <Link to="/admin" className="p-2 hover:bg-primary/10 rounded-full transition-colors text-primary" title="Admin Dashboard">
+                    <span className="material-symbols-outlined">dashboard_customize</span>
+                  </Link>
+                )}
+                <button
+                  onClick={() => signOut()}
+                  className="flex items-center justify-center p-2 hover:bg-primary/10 rounded-full transition-colors"
+                  title="Sign Out"
+                >
+                  <span className="material-symbols-outlined">logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="flex items-center justify-center p-2 hover:bg-primary/10 rounded-full transition-colors">
+                <span className="material-symbols-outlined">person</span>
+              </Link>
+            )}
             <button className="flex items-center justify-center p-2 hover:bg-primary/10 rounded-full transition-colors relative">
               <span className="material-symbols-outlined">shopping_bag</span>
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>

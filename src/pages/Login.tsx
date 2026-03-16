@@ -20,39 +20,52 @@ export function Login() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    // Check for MFA factors
-    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-    if (factorsError) {
-      setError(factorsError.message);
-      setLoading(false);
-      return;
-    }
-
-    const totpFactor = factors.totp[0];
-    if (totpFactor) {
-      setFactorId(totpFactor.id);
-      setShowMfa(true);
-      setLoading(false);
-    } else {
-      await refreshSession();
-      // Check if user is admin and has no MFA
-      const { data: profile } = await supabase.from('profiles').select('is_admin').single();
-      if (profile?.is_admin) {
-        navigate('/admin/mfa-setup');
-      } else {
-        navigate('/admin');
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
       }
+
+      // 1. Check if user is actually an admin
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .single();
+
+      if (profileError || !profile?.is_admin) {
+        await supabase.auth.signOut();
+        setError('Access denied. Administrative privileges required.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Check for MFA factors
+      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) {
+        setError(factorsError.message);
+        setLoading(false);
+        return;
+      }
+
+      const totpFactor = factors.totp[0];
+      if (totpFactor) {
+        setFactorId(totpFactor.id);
+        setShowMfa(true);
+      } else {
+        await refreshSession();
+        // Since we already checked profile.is_admin, we know they are admin
+        navigate('/admin/mfa-setup');
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
   };
 

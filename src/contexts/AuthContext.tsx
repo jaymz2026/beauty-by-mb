@@ -23,28 +23,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [aal, setAal] = useState<'aal1' | 'aal2' | null>(null);
 
   const refreshSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setSession(session);
-    setUser(session?.user ?? null);
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
 
-    if (session) {
-      // Check admin status
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
+      if (session) {
+        // Check admin status
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
 
-      setIsAdmin(!!profile?.is_admin);
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching profile:', profileError);
+        }
 
-      // Check MFA status
-      const { data: authData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      setAal(authData?.currentLevel as 'aal1' | 'aal2' | null);
-    } else {
-      setIsAdmin(false);
-      setAal(null);
+        setIsAdmin(!!profile?.is_admin);
+
+        // Check MFA status
+        const { data: authData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        setAal(authData?.currentLevel as 'aal1' | 'aal2' | null);
+      } else {
+        setIsAdmin(false);
+        setAal(null);
+      }
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {

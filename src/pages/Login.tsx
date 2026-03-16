@@ -46,7 +46,13 @@ export function Login() {
       setLoading(false);
     } else {
       await refreshSession();
-      navigate('/admin');
+      // Check if user is admin and has no MFA
+      const { data: profile } = await supabase.from('profiles').select('is_admin').single();
+      if (profile?.is_admin) {
+        navigate('/admin/mfa-setup');
+      } else {
+        navigate('/admin');
+      }
     }
   };
 

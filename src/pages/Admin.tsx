@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api, type Product } from '../api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Category {
   id: number;
@@ -7,6 +8,7 @@ interface Category {
 }
 
 export function Admin() {
+  const { isMfaEnabled } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +60,9 @@ export function Admin() {
         purchase_url: ''
       });
       fetchData();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Add product error:', error);
-      alert(`Failed to add product: ${error.message || 'Unknown error'}`);
+      alert(`Failed to add product: ${(error as Error).message || 'Unknown error'}`);
     }
   }
 
@@ -69,7 +71,7 @@ export function Admin() {
       try {
         await api.deleteProduct(id);
         fetchData();
-      } catch (error) {
+      } catch {
         alert('Failed to delete product');
       }
     }
@@ -81,9 +83,9 @@ export function Admin() {
       await api.createCategory(newCategoryName);
       setNewCategoryName('');
       fetchData();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Add category error:', error);
-      alert(`Failed to add category: ${error.message || 'Unknown error'}`);
+      alert(`Failed to add category: ${(error as Error).message || 'Unknown error'}`);
     }
   }
 
@@ -92,7 +94,7 @@ export function Admin() {
       try {
         await api.deleteCategory(id);
         fetchData();
-      } catch (error) {
+      } catch {
         alert('Failed to delete category. Check if it has products.');
       }
     }
@@ -103,9 +105,15 @@ export function Admin() {
   return (
     <main className="flex-grow p-8 bg-slate-50 dark:bg-slate-900">
       <div className="max-w-6xl mx-auto space-y-12">
-        <header>
-          <h1 className="text-3xl font-[800] mb-2">Backoffice Admin</h1>
-          <p className="text-slate-500">Manage your products and categories.</p>
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-[800] mb-2">Backoffice Admin</h1>
+            <p className="text-slate-500">Manage your products and categories.</p>
+          </div>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${isMfaEnabled ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+            <span className="material-symbols-outlined text-sm">{isMfaEnabled ? 'verified_user' : 'warning'}</span>
+            MFA {isMfaEnabled ? 'Protected' : 'Required'}
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

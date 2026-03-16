@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Check MFA status
       const { data: authData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      setAal(authData?.currentLevel as any);
+      setAal(authData?.currentLevel as 'aal1' | 'aal2' | null);
     } else {
       setIsAdmin(false);
       setAal(null);
@@ -83,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

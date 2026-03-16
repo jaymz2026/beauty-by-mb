@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { supabase } from './lib/supabase.js';
+import { supabase, createAuthenticatedClient } from './lib/supabase.js';
 
 const app = express();
 app.use(cors());
@@ -14,11 +14,12 @@ const adminAuth = async (req, res, next) => {
   if (!authHeader) return res.status(401).json({ error: 'No token provided' });
 
   const token = authHeader.split(' ')[1];
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const sb = createAuthenticatedClient(token);
+  const { data: { user }, error } = await sb.auth.getUser();
 
   if (error || !user) return res.status(401).json({ error: 'Invalid token' });
 
-  const { data: profile } = await supabase
+  const { data: profile } = await sb
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
@@ -35,6 +36,7 @@ const adminAuth = async (req, res, next) => {
   }
 
   req.user = user;
+  req.sb = sb;
   next();
 };
 
@@ -69,19 +71,19 @@ router.get('/products', async (req, res) => {
 });
 
 router.post('/products', adminAuth, async (req, res) => {
-  const { data, error } = await supabase.from('products').insert([req.body]).select().single();
+  const { data, error } = await req.sb.from('products').insert([req.body]).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
 });
 
 router.put('/products/:id', adminAuth, async (req, res) => {
-  const { data, error } = await supabase.from('products').update(req.body).eq('id', req.params.id).select().single();
+  const { data, error } = await req.sb.from('products').update(req.body).eq('id', req.params.id).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
 router.delete('/products/:id', adminAuth, async (req, res) => {
-  const { error } = await supabase.from('products').delete().eq('id', req.params.id);
+  const { error } = await req.sb.from('products').delete().eq('id', req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   res.status(204).send();
 });
@@ -111,13 +113,13 @@ router.get('/categories', async (req, res) => {
 });
 
 router.post('/categories', adminAuth, async (req, res) => {
-  const { data, error } = await supabase.from('categories').insert([req.body]).select().single();
+  const { data, error } = await req.sb.from('categories').insert([req.body]).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
 });
 
 router.delete('/categories/:id', adminAuth, async (req, res) => {
-  const { error } = await supabase.from('categories').delete().eq('id', req.params.id);
+  const { error } = await req.sb.from('categories').delete().eq('id', req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   res.status(204).send();
 });

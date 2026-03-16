@@ -59,7 +59,7 @@ export const api = {
   },
 
   // Admin / CRUD Methods
-  createProduct: async (product: any) => {
+  createProduct: async (product: Omit<Product, 'id' | 'category'> & { category_id: number }) => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',

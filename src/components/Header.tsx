@@ -30,7 +30,7 @@ export function Header() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const handleResultClick = (id: number) => {
+  const handleResultClick = (id: string) => {
     setSearchQuery('');
     setSearchResults([]);
     navigate(`/product/${id}`);

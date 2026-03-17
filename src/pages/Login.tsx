@@ -32,13 +32,38 @@ export function Login() {
         return;
       }
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found after login');
+
       // 1. Check if user is actually an admin
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_admin')
+        .eq('id', user.id)
         .single();
 
-      if (profileError || !profile?.is_admin) {
+      // If profile doesn't exist, try to create it (handles legacy users)
+      if (profileError && profileError.code === 'PGRST116') {
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({ id: user.id, is_admin: false })
+          .select()
+          .single();
+
+        if (!createError) {
+          profile = newProfile;
+          profileError = null;
+        }
+      }
+
+      if (profileError) {
+        await supabase.auth.signOut();
+        setError(`Database error: ${profileError.message} (${profileError.code})`);
+        setLoading(false);
+        return;
+      }
+
+      if (!profile?.is_admin) {
         await supabase.auth.signOut();
         setError('Access denied. Administrative privileges required.');
         setLoading(false);

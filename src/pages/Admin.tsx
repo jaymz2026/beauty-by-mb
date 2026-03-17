@@ -3,7 +3,7 @@ import { api, type Product } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Category {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -19,7 +19,7 @@ export function Admin() {
     price: 0,
     description: '',
     image: '',
-    category_id: 0,
+    category_id: '',
     purchase_url: ''
   });
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -56,7 +56,7 @@ export function Admin() {
         price: 0,
         description: '',
         image: '',
-        category_id: categories[0]?.id || 0,
+        category_id: categories[0]?.id || '',
         purchase_url: ''
       });
       fetchData();
@@ -66,7 +66,7 @@ export function Admin() {
     }
   }
 
-  async function handleDeleteProduct(id: number) {
+  async function handleDeleteProduct(id: string) {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await api.deleteProduct(id);
@@ -89,7 +89,7 @@ export function Admin() {
     }
   }
 
-  async function handleDeleteCategory(id: number) {
+  async function handleDeleteCategory(id: string) {
     if (window.confirm('Delete category? This might fail if products are linked to it.')) {
       try {
         await api.deleteCategory(id);
@@ -217,7 +217,7 @@ export function Admin() {
                   <label className="text-xs font-bold uppercase text-slate-400">Category</label>
                   <select
                     value={newProduct.category_id}
-                    onChange={(e) => setNewProduct(p => ({ ...p, category_id: parseInt(e.target.value) }))}
+                    onChange={(e) => setNewProduct(p => ({ ...p, category_id: e.target.value }))}
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-primary/10 rounded-lg px-3 py-2 text-sm outline-none"
                     required
                   >

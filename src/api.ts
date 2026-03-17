@@ -2,7 +2,7 @@
 const API_BASE_URL = '/api';
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   category: { name: string } | string;
   price: number;
@@ -12,7 +12,7 @@ export interface Product {
 }
 
 export interface JournalPost {
-  id: number;
+  id: string;
   title: string;
   excerpt: string;
   category: string;
@@ -59,7 +59,7 @@ export const api = {
   },
 
   // Admin / CRUD Methods
-  createProduct: async (product: Omit<Product, 'id' | 'category'> & { category_id: number }) => {
+  createProduct: async (product: Omit<Product, 'id' | 'category'> & { category_id: string }) => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
@@ -76,7 +76,7 @@ export const api = {
     return response.json();
   },
 
-  updateProduct: async (id: number, product: Partial<Product>) => {
+  updateProduct: async (id: string, product: Partial<Product>) => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',
@@ -90,7 +90,7 @@ export const api = {
     return response.json();
   },
 
-  deleteProduct: async (id: number) => {
+  deleteProduct: async (id: string) => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'DELETE',
@@ -122,7 +122,7 @@ export const api = {
     return response.json();
   },
 
-  deleteCategory: async (id: number) => {
+  deleteCategory: async (id: string) => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
       method: 'DELETE',

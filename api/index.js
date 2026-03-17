@@ -56,7 +56,7 @@ router.get('/products', async (req, res) => {
   let query = supabase
     .from('products')
     .select('*, category:categories(name)')
-    .order('id', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (q) query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
 
@@ -95,7 +95,7 @@ router.get('/products/:id', async (req, res) => {
 });
 
 router.get('/journal', async (req, res) => {
-  const { data, error } = await supabase.from('journal_posts').select('*').order('id', { ascending: false });
+  const { data, error } = await supabase.from('journal_posts').select('*').order('created_at', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
